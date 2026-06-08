@@ -1,0 +1,4 @@
+files:
+  chat evaluations:
+    - /definitions_file*.rb
+    - /fixtures/files/*eval*
