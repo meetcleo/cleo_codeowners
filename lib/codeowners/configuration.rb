@@ -30,7 +30,7 @@ module Codeowners
     # The organization name for teams
     # @return [String] the name of the organization
     def organization_name
-      raise MissingConfigurationError, "Organization name is required" if @organization_name.nil?
+      raise MissingConfigurationError, 'Organization name is required' if @organization_name.nil?
 
       @organization_name.dup
     end

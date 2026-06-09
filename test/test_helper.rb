@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
-require "bundler/setup"
-require "minitest/autorun"
-require "mocha/minitest"
+require 'bundler/setup'
+require 'minitest/autorun'
+require 'mocha/minitest'
 
-$LOAD_PATH.unshift(File.expand_path("../lib", __dir__))
+$LOAD_PATH.unshift(File.expand_path('../lib', __dir__))
 
-require "cleo_codeowners"
+require 'cleo_codeowners'
 
 module CleoCodeownersTestExtensions
   def self.included(base)
@@ -20,7 +20,7 @@ module CleoCodeownersTestExtensions
   end
 
   def described_class
-    Object.const_get(self.class.name.sub(/Test\Z/, ""))
+    Object.const_get(self.class.name.sub(/Test\Z/, ''))
   end
 end
 
@@ -28,7 +28,7 @@ module GlobalTestConfig
   def setup
     Codeowners::Configuration.reset_singleton_instance!
     Codeowners.configure do |config|
-      config.organization_name = "meetcleo"
+      config.organization_name = 'meetcleo'
     end
   end
 end

@@ -88,7 +88,8 @@ module Codeowners
       end.returns([git_output, success_status])
 
       # Mock gh API calls
-      [['user1@example.com', 'user1'], ['user2@example.com', 'user2'], ['user3@example.com', 'user3']].each do |email, username|
+      [['user1@example.com', 'user1'], ['user2@example.com', 'user2'],
+       ['user3@example.com', 'user3']].each do |email, username|
         gh_result = stub('ProcessStatus', success?: true)
         Open3.expects(:capture2).with do |*args|
           args[0] == 'gh' && args[1] == 'api' && args[2].include?(email)
@@ -143,15 +144,15 @@ module Codeowners
       definitions_file.stubs(:features_config).returns({
                                                          'parent' => {
                                                            'child1' => {},
-                                                           'child2' => {},
+                                                           'child2' => {}
                                                          },
                                                          'child1' => {
                                                            'grandchild1' => nil,
-                                                           'grandchild2' => nil,
+                                                           'grandchild2' => nil
                                                          },
                                                          'child2' => nil,
                                                          'grandchild1' => nil,
-                                                         'grandchild2' => nil,
+                                                         'grandchild2' => nil
                                                        })
       definitions_file.stubs(:feature_paths).with(feature: 'parent').returns([Pathname.new('parent.rb')])
       definitions_file.stubs(:feature_paths).with(feature: 'child1').returns([Pathname.new('child1.rb')])
@@ -193,7 +194,9 @@ module Codeowners
 
     def definitions_file_with_paths(*paths)
       definitions_file = stub('DefinitionsFile')
-      definitions_file.stubs(:feature_paths).with(feature: 'codeowners backend').returns(paths.map { |path| Pathname.new(path) })
+      definitions_file.stubs(:feature_paths).with(feature: 'codeowners backend').returns(paths.map do |path|
+        Pathname.new(path)
+      end)
       definitions_file.stubs(:features_config).returns({})
       definitions_file
     end

@@ -4,7 +4,6 @@
 
 module Codeowners
   class Owner
-
     ##
     # Name of team in CODEOWNERS file (e.g. @meetcleo/chat)
     # @return [String]
@@ -20,7 +19,7 @@ module Codeowners
     def initialize(name_string)
       name_string = "#{organization_name}/#{name_string}" unless name_string.start_with?(organization_name)
       @name = name_string
-      @short_name = name_string.split("/").last
+      @short_name = name_string.split('/').last
     end
 
     # Prefix for team names in the CODEOWNERS file

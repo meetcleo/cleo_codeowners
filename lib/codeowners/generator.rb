@@ -3,8 +3,8 @@
 
 module Codeowners
   class Generator
-    DEFAULT_OUTPUT_PATH = ".github/CODEOWNERS"
-    DEFAULT_HUMAN_OUTPUT_PATH = ".github/CODEOWNERS-HUMAN"
+    DEFAULT_OUTPUT_PATH = '.github/CODEOWNERS'
+    DEFAULT_HUMAN_OUTPUT_PATH = '.github/CODEOWNERS-HUMAN'
 
     def initialize(
       definitions_file: DefinitionsFile.new,
@@ -19,8 +19,8 @@ module Codeowners
     end
 
     def call
-      File.open(output_path, "w") do |output_file|
-        File.open(human_output_path, "w") do |output_human_file|
+      File.open(output_path, 'w') do |output_file|
+        File.open(human_output_path, 'w') do |output_human_file|
           @output_file = output_file
           @output_human_file = output_human_file
 
@@ -73,8 +73,8 @@ module Codeowners
           all_features << feature
         end
 
-        if owner == "unowned"
-          output("Currently unowned", depth:)
+        if owner == 'unowned'
+          output('Currently unowned', depth:)
         else
           output("Currently owned by @meetcleo/#{owner}", depth:)
         end
@@ -106,17 +106,21 @@ module Codeowners
     end
 
     def output_in_machine_format
-      file_rules, folder_rules = calculated_owners.partition { |owner| owner[:path].include?(".") }
+      file_rules, folder_rules = calculated_owners.partition { |owner| owner[:path].include?('.') }
       group_by_path_segments_and_output(folder_rules)
       group_by_path_segments_and_output(file_rules)
     end
 
     def group_by_path_segments_and_output(rules)
       grouped_by_path_segments_number = rules
-        .group_by { |owner| sanitised_path(owner[:path]).split("/").reject(&:empty?).size }
-        .each_value { |rule| rule.sort_by! { |owner| owner[:path] } }
-        .sort
-        .to_h
+                                        .group_by { |owner| sanitised_path(owner[:path]).split('/').reject(&:empty?).size }
+                                        .each_value do |rule|
+        rule.sort_by! do |owner|
+          owner[:path]
+        end
+      end
+                                                                                                                                        .sort
+                                                                                                                                        .to_h
 
       grouped_by_path_segments_number
         .each_value
@@ -140,7 +144,7 @@ module Codeowners
     end
 
     def sanitised_path(path)
-      return path if path.start_with?("/")
+      return path if path.start_with?('/')
 
       "/#{path}"
     end

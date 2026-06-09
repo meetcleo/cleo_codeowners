@@ -10,7 +10,8 @@ module Codeowners
     DEFAULT_MAX_COMMITS = 50
 
     ContributorStats = Data.define(:additions, :deletions, :commits, :dates)
-    Contributor = Data.define(:email, :username, :lines_changed, :additions, :deletions, :commits, :first_commit_date, :last_commit_date)
+    Contributor = Data.define(:email, :username, :lines_changed, :additions, :deletions, :commits, :first_commit_date,
+                              :last_commit_date)
 
     def initialize(definitions_file: DefinitionsFile.new, max_commits: DEFAULT_MAX_COMMITS)
       @definitions_file = definitions_file
@@ -60,10 +61,11 @@ module Codeowners
       max_commits_str = max_commits.to_i
       # Format: commit_hash|author_email|date
       # Followed by numstat lines: additions\tdeletions\tfilename
-      git_args = ['git', 'log', '--numstat', "--max-count=#{max_commits_str}", '--format=%H|%ae|%ad', '--date=short', '--']
+      git_args = ['git', 'log', '--numstat', "--max-count=#{max_commits_str}", '--format=%H|%ae|%ad', '--date=short',
+                  '--']
       git_args.concat(file_paths)
 
-      output, status = Open3.capture2(*git_args, err: [:child, :out])
+      output, status = Open3.capture2(*git_args, err: %i[child out])
       unless status.success?
         warn('Failed to run git log', output:)
         return []
@@ -107,7 +109,7 @@ module Codeowners
       stats = contributors_by_email[email]
       contributors_by_email[email] = stats.with(
         commits: stats.commits + 1,
-        dates: stats.dates + [date],
+        dates: stats.dates + [date]
       )
       email
     end
@@ -124,7 +126,7 @@ module Codeowners
       stats = contributors_by_email[email]
       contributors_by_email[email] = stats.with(
         additions: stats.additions + additions.to_i,
-        deletions: stats.deletions + deletions.to_i,
+        deletions: stats.deletions + deletions.to_i
       )
     end
 
@@ -138,7 +140,7 @@ module Codeowners
           deletions: stats.deletions,
           commits: stats.commits,
           first_commit_date: stats.dates.min,
-          last_commit_date: stats.dates.max,
+          last_commit_date: stats.dates.max
         )
       end
     end
@@ -156,7 +158,7 @@ module Codeowners
       gh_args = [
         'gh', 'api',
         "/search/commits?q=#{query_param}",
-        '--jq', '.items[0].author.login',
+        '--jq', '.items[0].author.login'
       ]
 
       result, status = Open3.capture2(*gh_args, err: File::NULL)

@@ -1,12 +1,11 @@
 # frozen_string_literal: true
 
-require "active_support/core_ext/enumerable"
-require "active_support/core_ext/string/inflections"
-require "English"
-require "pathname"
-require "set"
-require "thor"
-require_relative "../codeowners"
+require 'active_support/core_ext/enumerable'
+require 'active_support/core_ext/string/inflections'
+require 'English'
+require 'pathname'
+require 'thor'
+require_relative '../codeowners'
 
 module Codeowners
   class CLI < Thor
@@ -14,19 +13,19 @@ module Codeowners
       true
     end
 
-    desc "find_files feature (glob)", "Find all files under a particular feature, matching the GLOB file pattern"
-    def find_files(feature, glob = "*")
+    desc 'find_files feature (glob)', 'Find all files under a particular feature, matching the GLOB file pattern'
+    def find_files(feature, glob = '*')
       files = DefinitionsFile.new.feature_paths(feature:).select { |file| file.fnmatch?(glob) }
       puts files.join("\n")
     end
 
-    desc "find_test_files feature", "Find all test files under a particular feature"
+    desc 'find_test_files feature', 'Find all test files under a particular feature'
     def find_test_files(feature)
-      find_files(feature, "*_test.rb")
+      find_files(feature, '*_test.rb')
     end
 
-    desc "find_contributors FEATURE", "Find top contributors for a feature based on git history"
-    method_option :max_commits, type: :numeric, default: 50, desc: "Maximum number of commits to analyze"
+    desc 'find_contributors FEATURE', 'Find top contributors for a feature based on git history'
+    method_option :max_commits, type: :numeric, default: 50, desc: 'Maximum number of commits to analyze'
     def find_contributors(feature)
       contributor_finder = ContributorFinder.new(max_commits: options[:max_commits])
       contributors = contributor_finder.find_contributors(feature:)
@@ -38,7 +37,7 @@ module Codeowners
 
       first_date = contributors.filter_map(&:first_commit_date).min
       last_date = contributors.filter_map(&:last_commit_date).max
-      date_range = first_date && last_date ? "#{first_date} to #{last_date}" : "N/A"
+      date_range = first_date && last_date ? "#{first_date} to #{last_date}" : 'N/A'
       total_commits = contributors.sum(&:commits)
 
       puts "Top contributors for feature '#{feature}'"
@@ -46,9 +45,9 @@ module Codeowners
       puts "Total commits: #{total_commits}"
       puts
 
-      table_format = "%-30s %10s %10s %15s %8s"
-      puts format(table_format, "GitHub Username", "Additions", "Deletions", "Lines Changed", "Commits")
-      puts "-" * 81
+      table_format = '%-30s %10s %10s %15s %8s'
+      puts format(table_format, 'GitHub Username', 'Additions', 'Deletions', 'Lines Changed', 'Commits')
+      puts '-' * 81
       contributors.each do |contributor|
         puts format(
           table_format,
@@ -56,13 +55,13 @@ module Codeowners
           contributor.additions,
           contributor.deletions,
           contributor.lines_changed,
-          contributor.commits,
+          contributor.commits
         )
       end
     end
 
-    desc "find_owner filepath", "Find who owns a given file"
-    method_option :glob, type: :boolean, aliases: "-g", desc: "Output the pattern matched"
+    desc 'find_owner filepath', 'Find who owns a given file'
+    method_option :glob, type: :boolean, aliases: '-g', desc: 'Output the pattern matched'
     def find_owner(filepath)
       codeowners_file = CodeownersFile.new
       owner_finder = OwnerFinder.new(codeowners_file:)
@@ -70,20 +69,20 @@ module Codeowners
       owners = ownership&.owners
 
       unless owners&.any?
-        puts "No owners found!"
+        puts 'No owners found!'
         exit(1)
       end
 
-      output = owners.join(" ")
+      output = owners.join(' ')
       output << " #{ownership.glob}" if options[:glob]
 
       puts output
     end
 
-    desc "find_owned_files OWNER", "Find files matched to a given OWNER in the CODEOWNERS file"
-    method_option :pattern, type: :string, default: "**/*", desc: "Pattern to match files against"
+    desc 'find_owned_files OWNER', 'Find files matched to a given OWNER in the CODEOWNERS file'
+    method_option :pattern, type: :string, default: '**/*', desc: 'Pattern to match files against'
     def find_owned_files(owner)
-      warn_against_global_glob_pattern if options[:pattern] == "**/*"
+      warn_against_global_glob_pattern if options[:pattern] == '**/*'
 
       codeowners_file = CodeownersFile.new
       owner_finder = OwnerFinder.new(codeowners_file:)
@@ -103,18 +102,18 @@ module Codeowners
       end
     end
 
-    desc "find_unowned_files", "Find files in the repo that are not marked with an owner in CODEOWNERS"
-    method_option :pattern, type: :string, default: "**/*", desc: "Pattern to match files against"
-    method_option :exit_status_on_match, type: :numeric, default: 0, desc: "What exit status should I return on match?"
-    method_option :output, type: :string, aliases: "-o", desc: "Output file path (disables color codes)"
+    desc 'find_unowned_files', 'Find files in the repo that are not marked with an owner in CODEOWNERS'
+    method_option :pattern, type: :string, default: '**/*', desc: 'Pattern to match files against'
+    method_option :exit_status_on_match, type: :numeric, default: 0, desc: 'What exit status should I return on match?'
+    method_option :output, type: :string, aliases: '-o', desc: 'Output file path (disables color codes)'
     def find_unowned_files
-      warn_against_global_glob_pattern if options[:pattern] == "**/*"
+      warn_against_global_glob_pattern if options[:pattern] == '**/*'
 
       codeowners_file = CodeownersFile.new
       pattern = options[:pattern]
 
-      git_ls_files_pattern = pattern == "**/*" ? "." : pattern
-      git_tracked_files = %x(git ls-files #{git_ls_files_pattern} 2>&1)
+      git_ls_files_pattern = pattern == '**/*' ? '.' : pattern
+      git_tracked_files = `git ls-files #{git_ls_files_pattern} 2>&1`
       unless $CHILD_STATUS.success?
         warn "Failed to run git ls-files: #{git_tracked_files}"
         exit(1)
@@ -127,7 +126,7 @@ module Codeowners
         codeowners_file.globs.none? { |glob| glob.match?(filepath) }
       end
 
-      output_stream = options[:output] ? File.open(options[:output], "w") : $stdout
+      output_stream = options[:output] ? File.open(options[:output], 'w') : $stdout
       use_colors = options[:output].nil?
 
       begin
@@ -136,7 +135,8 @@ module Codeowners
           exit(0)
         else
           truncated_paths = truncate_to_unowned_directories(filepaths)
-          output_with_color(output_stream, use_colors, "\e[31m", "The following #{'path'.pluralize(truncated_paths.length)} are not included in the CODEOWNERS file:")
+          output_with_color(output_stream, use_colors, "\e[31m",
+                            "The following #{'path'.pluralize(truncated_paths.length)} are not included in the CODEOWNERS file:")
           truncated_paths.each do |filepath|
             output_with_color(output_stream, use_colors, "\e[31m", filepath)
           end
@@ -147,7 +147,7 @@ module Codeowners
       end
     end
 
-    desc "find_feature filepath", "Find which feature a given file belongs to"
+    desc 'find_feature filepath', 'Find which feature a given file belongs to'
     def find_feature(filepath)
       feature = DefinitionsFile.new.find_feature_for_file(path: filepath)
       if feature
@@ -158,8 +158,8 @@ module Codeowners
       end
     end
 
-    desc "find_features filepath", "Find all matching features a given file belongs to"
-    method_option :show_path, type: :boolean, default: false, desc: "Print the path (useful when finding many paths)"
+    desc 'find_features filepath', 'Find all matching features a given file belongs to'
+    method_option :show_path, type: :boolean, default: false, desc: 'Print the path (useful when finding many paths)'
     def find_features(filepath)
       feature_matches = DefinitionsFile.new.find_features_for_file(path: filepath)
       if feature_matches.any?
@@ -168,7 +168,7 @@ module Codeowners
           print << filepath if options[:show_path]
           print << match.feature
           print << match.path_pattern
-          puts print.join(",")
+          puts print.join(',')
         end
       else
         puts "No feature found for #{filepath}"
@@ -193,10 +193,12 @@ module Codeowners
       result = []
       processed_dirs = Set.new
 
-      directories = filepaths.map { |filepath| File.dirname(filepath) }.uniq.sort_by { |directory| directory.count("/") }
+      directories = filepaths.map do |filepath|
+        File.dirname(filepath)
+      end.uniq.sort_by { |directory| directory.count('/') }
 
       directories.each do |directory|
-        next if directory == "."
+        next if directory == '.'
         next if processed_dirs.any? { |processed| directory.start_with?("#{processed}/") }
 
         git_files_in_dir = `git ls-files -- '#{directory}/' 2>&1`.split("\n")

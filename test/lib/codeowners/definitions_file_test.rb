@@ -16,6 +16,7 @@ module Codeowners
 
     test 'gracefully handles bad locations' do
       file = DefinitionsFile.new('./does-not-exist/really/*')
+
       assert_empty file.definition
       assert_empty file.file_config
       assert_empty file.owners_config
@@ -24,6 +25,7 @@ module Codeowners
 
     test 'merges all YAML files into the definition' do
       expected_teams = ['chat', 'chat evaluations']
+
       assert_equal expected_teams, definitions_file.file_config.keys
       assert_equal expected_teams, definitions_file.owners_config.keys
       assert_equal expected_teams, definitions_file.features_config.keys
@@ -47,8 +49,10 @@ module Codeowners
       assert_nil definitions_file.find_feature_for_file(path: nil)
       assert_nil definitions_file.find_feature_for_file(path: 'nonexistent')
 
-      assert_equal 'chat evaluations', definitions_file.find_feature_for_file(path: 'definitions_file.rb'), 'matches glob in files.yaml'
-      assert_equal 'chat evaluations', definitions_file.find_feature_for_file(path: 'definitions_file_test.rb'), 'matches glob in files.yaml'
+      assert_equal 'chat evaluations', definitions_file.find_feature_for_file(path: 'definitions_file.rb'),
+                   'matches glob in files.yaml'
+      assert_equal 'chat evaluations', definitions_file.find_feature_for_file(path: 'definitions_file_test.rb'),
+                   'matches glob in files.yaml'
 
       assert_empty definitions_file.find_features_for_file(path: nil)
       assert_empty definitions_file.find_features_for_file(path: 'nonexistent')
@@ -61,8 +65,10 @@ module Codeowners
     end
 
     test '#find_feature*_for_file finds files defined under directories' do
-      assert_equal 'chat', definitions_file.find_feature_for_file(path: 'fixtures/files/nested/folder/file'), 'matches nested folders'
-      assert_equal 'chat', definitions_file.find_feature_for_file(path: 'fixtures/files/test-chat_evaluations.yaml'), 'matches full file'
+      assert_equal 'chat', definitions_file.find_feature_for_file(path: 'fixtures/files/nested/folder/file'),
+                   'matches nested folders'
+      assert_equal 'chat', definitions_file.find_feature_for_file(path: 'fixtures/files/test-chat_evaluations.yaml'),
+                   'matches full file'
       assert_equal 'chat', definitions_file.find_feature_for_file(path: 'fixtures/files/test'), 'matches partial file'
 
       assert_equal [described_class::Match.new('chat', './fixtures/files/*')],
@@ -71,10 +77,10 @@ module Codeowners
       assert_equal(
         [
           described_class::Match.new('chat', './fixtures/files/*'),
-          described_class::Match.new('chat evaluations', './fixtures/files/*eval*'),
+          described_class::Match.new('chat evaluations', './fixtures/files/*eval*')
         ],
         definitions_file.find_features_for_file(path: 'fixtures/files/test-chat_evaluations.yaml'),
-        'matches full file',
+        'matches full file'
       )
 
       assert_equal [described_class::Match.new('chat', './fixtures/files/*')],

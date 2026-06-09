@@ -39,7 +39,7 @@ module Codeowners
 
     def normalize_string(string)
       string.to_s.delete_prefix('/') # remove leading slashes
-        .gsub(%r{/\Z}, '/**') # replace trailing slash with a recursive wildcard
+            .gsub(%r{/\Z}, '/**') # replace trailing slash with a recursive wildcard
     end
   end
 end

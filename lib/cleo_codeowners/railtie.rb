@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require "rails/railtie"
+require 'rails/railtie'
 
 module CleoCodeowners
   class Railtie < Rails::Railtie
     rake_tasks do
-      load File.expand_path("../tasks/codeowners.rake", __dir__)
+      load File.expand_path('../tasks/codeowners.rake', __dir__)
     end
   end
 end
