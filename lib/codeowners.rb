@@ -2,6 +2,9 @@
 # frozen_string_literal: true
 
 module Codeowners
+  # Base error for all Codeowners errors
+  class Error < StandardError; end
+
   require_relative 'codeowners/owner'
   require_relative 'codeowners/glob'
   require_relative 'codeowners/ownership'
