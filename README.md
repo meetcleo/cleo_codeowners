@@ -24,6 +24,34 @@ In Rails, the gem adds a rake task:
 bin/rails codeowners:generate
 ```
 
+## Configuration
+
+Set the GitHub organization name before generating CODEOWNERS.
+
+In a Rails app, add an initializer:
+
+```ruby
+# config/initializers/codeowners.rb
+Codeowners.configure do |config|
+  config.organization_name = "my_org"
+end
+```
+
+In a non-Rails app, configure Codeowners in the Rakefile while setting up the rake task:
+
+```ruby
+# Rakefile
+require "cleo_codeowners"
+
+Codeowners.configure do |config|
+  config.organization_name = "my_org"
+end
+
+task :environment
+
+load Gem.loaded_specs["cleo_codeowners"].full_gem_path + "/lib/tasks/codeowners.rake"
+```
+
 ## Writing your codeowners files
 
 Create YAML files under `.cleo/codeowners/`.
