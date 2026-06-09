@@ -14,4 +14,10 @@ module Codeowners
   require_relative 'codeowners/definitions_file'
   require_relative 'codeowners/contributor_finder'
   require_relative 'codeowners/generator'
+
+  def self.configure(&block)
+    yield(Configuration.instance) if block
+
+    Configuration.instance
+  end
 end

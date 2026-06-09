@@ -27,7 +27,9 @@ end
 module GlobalTestConfig
   def setup
     Codeowners::Configuration.reset_singleton_instance!
-    Codeowners::Configuration.instance.organization_name = "meetcleo"
+    Codeowners.configure do |config|
+      config.organization_name = "meetcleo"
+    end
   end
 end
 
