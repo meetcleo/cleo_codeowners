@@ -132,8 +132,7 @@ module Codeowners
     def blurb
       <<~BLURB
         This CODEOWNERS file is grouped by feature, using Github teams (a squad may
-        have one or more Github teams). If your squad does not have a Github team,
-        contact @meetcleo/admins and they'll help you.
+        have one or more Github teams).
 
         Please use the codeowners:generate rake task and the .cleo/codeowners yaml
         configuration files to update this file.
