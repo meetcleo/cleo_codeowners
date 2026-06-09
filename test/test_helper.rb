@@ -24,4 +24,12 @@ module CleoCodeownersTestExtensions
   end
 end
 
+module GlobalTestConfig
+  def setup
+    Codeowners::Configuration.reset_singleton_instance!
+    Codeowners::Configuration.instance.organization_name = "meetcleo"
+  end
+end
+
+Minitest::Test.include(GlobalTestConfig)
 Minitest::Test.include(CleoCodeownersTestExtensions)

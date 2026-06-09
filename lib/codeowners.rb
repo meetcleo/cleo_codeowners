@@ -5,6 +5,7 @@ module Codeowners
   # Base error for all Codeowners errors
   class Error < StandardError; end
 
+  require_relative 'codeowners/configuration'
   require_relative 'codeowners/owner'
   require_relative 'codeowners/glob'
   require_relative 'codeowners/ownership'
