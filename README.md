@@ -31,33 +31,34 @@ Create YAML files under `.cleo/codeowners/`.
 ```yaml
 # .cleo/codeowners/features.yml
 features:
-  feature A:
-    feature A foo:
-  feature B:
+  session management:
+    session expiry:
+  billing:
 ```
 
 ```yaml
 # .cleo/codeowners/owners.yml
 owners:
-  feature A: team-1
-  feature A foo: team-2
-  feature B: team-2
+  session management: identity-platform
+  billing: payments
 ```
 
 Child features inherit their parent owner unless they define one.
 
 ```yaml
-# .cleo/codeowners/files/feature_a.yml
+# .cleo/codeowners/files/session_management.yml
 files:
-  feature_a:
-    - /app/controllers/feature_a/
-    - /app/models/feature_a/foo.rb
+  session management:
+    - /app/controllers/sessions/
+    - /app/models/session.rb
+  session expiry:
+    - /app/services/session_expiry/
 
-# .cleo/codeowners/files/feature_b.yml
+# .cleo/codeowners/files/billing.yml
 files:
-  feature_b:
-    - /app/controllers/feature_b
-    - /app/models/feature_b
+  billing:
+    - /app/controllers/billing/
+    - /app/models/invoice.rb
 ```
 
 Generate:
@@ -69,10 +70,10 @@ bin/rails codeowners:generate
 Inspect:
 
 ```sh
-cleo-codeowners find_feature app/models/feature_a/foo.rb
-cleo-codeowners find_owner app/models/feature_a/foo.rb --glob
+cleo-codeowners find_feature app/models/session.rb
+cleo-codeowners find_owner app/models/session.rb --glob
 cleo-codeowners find_unowned_files --pattern='app/**/*.rb' --exit-status-on-match=1
-cleo-codeowners find_contributors feature_a --max-commits=100
+cleo-codeowners find_contributors "session management" --max-commits=100
 ```
 
 ## Development
