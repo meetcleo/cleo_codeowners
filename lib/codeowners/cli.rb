@@ -94,11 +94,12 @@ module Codeowners
         filepath
       end
 
+      owner_long_name = Owner.new(owner).long_name
       if owned_files.any?
-        puts "#{owned_files.length} #{'file'.pluralize(owned_files.length)} found belonging to owner @meetcleo/#{owner}"
+        puts "#{owned_files.length} #{'file'.pluralize(owned_files.length)} found belonging to owner #{owner_long_name}"
         puts owned_files
       else
-        puts "No files found belonging to owner @meetcleo/#{owner}"
+        puts "No files found belonging to owner #{owner_long_name}"
       end
     end
 

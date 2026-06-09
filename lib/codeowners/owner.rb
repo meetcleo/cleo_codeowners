@@ -5,14 +5,22 @@
 module Codeowners
   class Owner
 
-    # Name of team in CODEOWNERS file (e.g. @meetcleo/card-1-be)
+    ##
+    # Name of team in CODEOWNERS file (e.g. @meetcleo/chat)
     # @return [String]
     attr_reader :name
+    alias long_name name
 
-    # @param [String] name_string Name of team in CODEOWNERS file (e.g. `"@meetcleo/card-1-be"`)
+    ##
+    # Name of team in config files (e.g. chat)
+    # @return [String]
+    attr_reader :short_name
+
+    # @param [String] name_string Name of team in CODEOWNERS file (e.g. `"@meetcleo/chat"`)
     def initialize(name_string)
       name_string = "#{organization_name}/#{name_string}" unless name_string.start_with?(organization_name)
       @name = name_string
+      @short_name = name_string.split("/").last
     end
 
     # Prefix for team names in the CODEOWNERS file

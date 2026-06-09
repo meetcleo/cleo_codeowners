@@ -81,8 +81,8 @@ module Codeowners
 
         if present?(feature_files)
           feature_files.sort.uniq.each do |file|
-            record_calculated_owner(file, "@meetcleo/#{owner}")
-            output("#{file} @meetcleo/#{owner}", depth:, comment: false)
+            record_calculated_owner(file, Owner.new(owner).long_name)
+            output("#{file} #{Owner.new(owner).long_name}", depth:, comment: false)
           end
         end
 
