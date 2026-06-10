@@ -21,7 +21,7 @@ module Codeowners
       last_matching_ownership = find_ownership_for_file(filepath:)
       return [] if last_matching_ownership.nil?
 
-      last_matching_ownership.owners.map(&:to_s)
+      last_matching_ownership.owners.map(&:short_name)
     end
 
     # Find the most likely owners of the file with the given filepath. Returns
