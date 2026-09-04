@@ -25,7 +25,9 @@ module CleoCodeownersTestExtensions
 end
 
 module GlobalTestConfig
-  def setup
+  def before_setup
+    super
+
     Codeowners::Configuration.reset_singleton_instance!
     Codeowners.configure do |config|
       config.organization_name = 'meetcleo'
