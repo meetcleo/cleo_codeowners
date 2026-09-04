@@ -43,8 +43,8 @@ module Codeowners
       run_generator
 
       assert_equal <<~CODEOWNERS, machine_output
-        /app/ @meetcleo/parent-team
         /README.md @meetcleo/unowned
+        /app/ @meetcleo/parent-team
         /app/models/user.rb @meetcleo/parent-team
       CODEOWNERS
 
@@ -55,6 +55,61 @@ module Codeowners
       assert_includes human_output, '    /app/models/user.rb @meetcleo/parent-team'
       assert_includes human_output, '# SIBLING'
       assert_includes human_output, '# Currently unowned'
+    end
+
+    test '#call orders a broad wildcard rule before the specific rules it would otherwise shadow' do
+      write_definitions(
+        features: <<~YAML,
+          features:
+            catch_all:
+            specific:
+        YAML
+        owners: <<~YAML,
+          owners:
+            catch_all: catch-all-team
+            specific: specific-team
+        YAML
+        files: <<~YAML
+          files:
+            catch_all:
+              - /modules/*
+            specific:
+              - /modules/reporting/
+        YAML
+      )
+
+      run_generator
+
+      assert_equal <<~CODEOWNERS, machine_output
+        /modules/* @meetcleo/catch-all-team
+        /modules/reporting/ @meetcleo/specific-team
+      CODEOWNERS
+    end
+
+    test '#call rejects a path declared both with and without a trailing slash' do
+      write_definitions(
+        features: <<~YAML,
+          features:
+            team_a:
+            team_b:
+        YAML
+        owners: <<~YAML,
+          owners:
+            team_a: alpha
+            team_b: beta
+        YAML
+        files: <<~YAML
+          files:
+            team_a:
+              - /shared/widgets
+            team_b:
+              - /shared/widgets/
+        YAML
+      )
+
+      error = assert_raises(RuntimeError) { run_generator }
+
+      assert_includes error.message, '/shared/widgets'
     end
 
     test '#call raises when a feature has no owner to inherit' do

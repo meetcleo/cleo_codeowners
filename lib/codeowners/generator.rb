@@ -1,6 +1,8 @@
 # typed: false
 # frozen_string_literal: true
 
+require 'pathname'
+
 module Codeowners
   class Generator
     DEFAULT_OUTPUT_PATH = '.github/CODEOWNERS'
@@ -105,32 +107,40 @@ module Codeowners
       calculated_owners.push({ path:, owner: })
     end
 
+    # GitHub applies the *last* matching CODEOWNERS rule, so rules are listed
+    # least-specific first: by number of path segments (`/app/` is broader than
+    # `/app/models/user.rb`), then by path so a wildcard such as `/foo/*` sorts
+    # ahead of the `/foo/bar/` it would otherwise shadow.
     def output_in_machine_format
-      file_rules, folder_rules = calculated_owners.partition { |owner| owner[:path].include?('.') }
-      group_by_path_segments_and_output(folder_rules)
-      group_by_path_segments_and_output(file_rules)
+      merge_owners_by_path(calculated_owners)
+        .sort_by { |path, _owners| [path_depth(path), path] }
+        .each { |path, rule_owners| output_file << "#{path} #{rule_owners.join(' ')}\n" }
     end
 
-    def group_by_path_segments_and_output(rules)
-      grouped_by_path_segments_number = rules
-                                        .group_by { |owner| sanitised_path(owner[:path]).split('/').reject(&:empty?).size }
-                                        .each_value do |rule|
-        rule.sort_by! do |owner|
-          owner[:path]
-        end
+    # Combines the owners of rules that share a path onto one line.
+    def merge_owners_by_path(rules)
+      rules_by_path = rules.group_by { |owner| sanitised_path(owner[:path]) }
+      reject_trailing_slash_conflicts(rules_by_path.keys)
+      rules_by_path.map do |path, owners_for_path|
+        [path, owners_for_path.map { |owner| owner[:owner] }.uniq.sort]
       end
-                                                                                                                                        .sort
-                                                                                                                                        .to_h
+    end
 
-      grouped_by_path_segments_number
-        .each_value
-        .map { |files_and_owners| files_and_owners.group_by { |owner| owner[:path] } }
-        .each do |files_and_owners|
-          files_and_owners.each do |file, owners_list|
-            rule_owners = owners_list.map { |owner| owner[:owner] }.uniq.sort
-            output_file << "#{sanitised_path(file)} #{rule_owners.join(' ')}\n"
-          end
-        end
+    # A path written both with and without a trailing slash is rejected rather
+    # than guessed at: `/foo` and `/foo/` are effectively same rule, but on disk
+    # they differ (a directory needs its slash to match recursively, a file must
+    # not have one), so the definitions must pick one.
+    def reject_trailing_slash_conflicts(paths)
+      paths.group_by { |path| path.chomp('/') }.each_value do |variants|
+        next if variants.uniq.size == 1
+
+        raise "#{variants.min} is declared both with and without a trailing slash " \
+              "(#{variants.uniq.sort.join(', ')}); pick one so it is clear whether it is a file or a directory."
+      end
+    end
+
+    def path_depth(path)
+      Pathname.new(path).each_filename.count
     end
 
     def blurb
