@@ -25,21 +25,24 @@ module Codeowners
     # Does this glob match the given filepath?
     # @param [String] filepath to match against
     # @note
+    #   Use `FNM_PATHNAME` so a single `*` stays within one path segment.
+    #   Use `FNM_DOTMATCH` so `*` still matches dotfiles/dot-dirs e.g.
+    #   `.github`, as GitHub does.
     #   Don't use `FNM_CASEFOLD`, GitHub uses a case sensitive file system.
     #   Don't use `FNM_EXTGLOB`, GitHub CODEOWNERS files don't support it.
-    #   Don't use `FNM_PATHNAME`, we want to match `*` against '/'.
     #
     # @see https://docs.ruby-lang.org/en/3.3/File.html#method-c-fnmatch
     # @return [Boolean]
     def match?(filepath)
-      fnmatch(pattern, filepath, File::FNM_DOTMATCH)
+      # Bitwise OR is how we combine flags.
+      fnmatch(pattern, filepath, File::FNM_PATHNAME | File::FNM_DOTMATCH)
     end
 
     private
 
     def normalize_string(string)
       string.to_s.delete_prefix('/') # remove leading slashes
-            .gsub(%r{/\Z}, '/**') # replace trailing slash with a recursive wildcard
+            .gsub(%r{/\Z}, '/**/*') # replace trailing slash with a recursive wildcard
     end
   end
 end
