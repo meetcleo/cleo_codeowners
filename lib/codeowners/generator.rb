@@ -1,6 +1,7 @@
 # typed: false
 # frozen_string_literal: true
 
+require 'active_support/core_ext/array/conversions'
 require 'pathname'
 
 module Codeowners
@@ -59,15 +60,18 @@ module Codeowners
       @files ||= definitions_file.file_config
     end
 
-    def calculate_owners_and_output_in_human_format(features:, current_owner: nil, depth: 0)
+    def calculate_owners_and_output_in_human_format(features:, current_owners: [], depth: 0)
       return unless present?(features)
 
       features.sort_by(&:first).each do |feature, children|
         output(feature.upcase, depth:)
-        owner = owners.fetch(feature, current_owner)
+        feature_owners = Array(
+          owners.fetch(feature, current_owners)
+        ).reject { |owner| blank?(owner) }
+
         feature_files = files[feature]
 
-        if blank?(owner)
+        if feature_owners.empty?
           raise "Please assign an owner for #{feature} in owners.yaml!"
         elsif blank?(feature_files) && blank?(children)
           raise "Please assign files or child features to #{feature}, or remove it!"
@@ -75,20 +79,22 @@ module Codeowners
           all_features << feature
         end
 
-        if owner == 'unowned'
+        long_names = feature_owners.map { |owner| Owner.new(owner).long_name }.uniq
+
+        if feature_owners == ['unowned']
           output('Currently unowned', depth:)
         else
-          output("Currently owned by @meetcleo/#{owner}", depth:)
+          output("Currently owned by #{long_names.to_sentence}", depth:)
         end
 
         if present?(feature_files)
           feature_files.sort.uniq.each do |file|
-            record_calculated_owner(file, Owner.new(owner).long_name)
-            output("#{file} #{Owner.new(owner).long_name}", depth:, comment: false)
+            long_names.each { |long_name| record_calculated_owner(file, long_name) }
+            output("#{file} #{long_names.join(' ')}", depth:, comment: false)
           end
         end
 
-        calculate_owners_and_output_in_human_format(features: children, current_owner: owner, depth: depth + 1)
+        calculate_owners_and_output_in_human_format(features: children, current_owners: feature_owners, depth: depth + 1)
       end
     end
 

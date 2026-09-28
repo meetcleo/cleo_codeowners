@@ -60,27 +60,35 @@ Create YAML files under `.cleo/codeowners/`.
 # .cleo/codeowners/features.yml
 features:
   session management:
+    session administration:
     session expiry:
   billing:
 ```
 
+Child features inherit their parent's owners, or can override with their own.
+An owner can be one or more teams.
+
 ```yaml
 # .cleo/codeowners/owners.yml
 owners:
+  session administration:
+    - operations
   session management: identity-platform
-  billing: payments
+  billing:
+    - payments
+    - finance
 ```
-
-Child features inherit their parent owner unless they define one.
 
 ```yaml
 # .cleo/codeowners/files/session_management.yml
 files:
+  session administration:
+    - /app/controllers/admin/sessions/
+  session expiry:
+    - /app/services/session_expiry/
   session management:
     - /app/controllers/sessions/
     - /app/models/session.rb
-  session expiry:
-    - /app/services/session_expiry/
 
 # .cleo/codeowners/files/billing.yml
 files:

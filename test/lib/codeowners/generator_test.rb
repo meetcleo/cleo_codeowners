@@ -57,6 +57,67 @@ module Codeowners
       assert_includes human_output, '# Currently unowned'
     end
 
+    test '#call assigns every owner in a list of owners to the feature files' do
+      write_definitions(
+        features: <<~YAML,
+          features:
+            billing:
+        YAML
+        owners: <<~YAML,
+          owners:
+            billing:
+              - payments
+              - finance
+        YAML
+        files: <<~YAML
+          files:
+            billing:
+              - /app/billing/
+              - /app/models/invoice.rb
+        YAML
+      )
+
+      run_generator
+
+      assert_equal <<~CODEOWNERS, machine_output
+        /app/billing/ @meetcleo/finance @meetcleo/payments
+        /app/models/invoice.rb @meetcleo/finance @meetcleo/payments
+      CODEOWNERS
+
+      assert_includes human_output, '# Currently owned by @meetcleo/payments and @meetcleo/finance'
+      assert_includes human_output, '  /app/billing/ @meetcleo/payments @meetcleo/finance'
+    end
+
+    test '#call passes a list of owners down to child features that do not declare their own' do
+      write_definitions(
+        features: <<~YAML,
+          features:
+            billing:
+              invoices:
+              refunds:
+        YAML
+        owners: <<~YAML,
+          owners:
+            billing: [payments, finance]
+            refunds: support
+        YAML
+        files: <<~YAML
+          files:
+            invoices:
+              - /app/invoices/
+            refunds:
+              - /app/refunds/
+        YAML
+      )
+
+      run_generator
+
+      assert_equal <<~CODEOWNERS, machine_output
+        /app/invoices/ @meetcleo/finance @meetcleo/payments
+        /app/refunds/ @meetcleo/support
+      CODEOWNERS
+    end
+
     test '#call orders a broad wildcard rule before the specific rules it would otherwise shadow' do
       write_definitions(
         features: <<~YAML,
@@ -120,6 +181,28 @@ module Codeowners
         YAML
         owners: <<~YAML,
           owners:
+        YAML
+        files: <<~YAML
+          files:
+            orphan:
+              - /orphan.rb
+        YAML
+      )
+
+      error = assert_raises(RuntimeError) { run_generator }
+
+      assert_equal 'Please assign an owner for orphan in owners.yaml!', error.message
+    end
+
+    test '#call raises when a feature has an empty list of owners' do
+      write_definitions(
+        features: <<~YAML,
+          features:
+            orphan:
+        YAML
+        owners: <<~YAML,
+          owners:
+            orphan: []
         YAML
         files: <<~YAML
           files:
